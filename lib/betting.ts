@@ -6,48 +6,26 @@ export type BoxedCalculationResult = {
 export function calculateExactaBoxed(
   selections: number[]
 ): BoxedCalculationResult {
+  const n = selections.length;
+  const numberOfLines = n >= 2 ? n * (n - 1) : 0;
   const combinations: number[][] = [];
-
-  if (selections.length < 2) {
-    return { combinations, numberOfLines: 0 };
-  }
-
-  for (let i = 0; i < selections.length; i += 1) {
-    for (let j = 0; j < selections.length; j += 1) {
-      if (i !== j) {
-        combinations.push([selections[i], selections[j]]);
-      }
-    }
-  }
 
   return {
     combinations,
-    numberOfLines: combinations.length,
+    numberOfLines,
   };
 }
 
 export function calculateTrifectaBoxed(
   selections: number[]
 ): BoxedCalculationResult {
+  const n = selections.length;
+  const numberOfLines = n >= 3 ? n * (n - 1) * (n - 2) : 0;
   const combinations: number[][] = [];
-
-  if (selections.length < 3) {
-    return { combinations, numberOfLines: 0 };
-  }
-
-  for (let i = 0; i < selections.length; i += 1) {
-    for (let j = 0; j < selections.length; j += 1) {
-      for (let k = 0; k < selections.length; k += 1) {
-        if (i !== j && i !== k && j !== k) {
-          combinations.push([selections[i], selections[j], selections[k]]);
-        }
-      }
-    }
-  }
 
   return {
     combinations,
-    numberOfLines: combinations.length,
+    numberOfLines,
   };
 }
 

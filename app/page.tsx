@@ -37,7 +37,7 @@ export default function Home() {
   const [betType, setBetType] = useState<BetType>("WIN");
   const [stakePerLine, setStakePerLine] = useState<string>("1");
 
-  const combinations = useMemo(() => {
+  const lines = useMemo(() => {
     switch (betType) {
       case "EXACTA_BOXED":
         return calculateExactaBoxed(selectedHorseNumbers).numberOfLines;
@@ -53,8 +53,8 @@ export default function Home() {
 
   const stakeValue = Number(stakePerLine) > 0 ? Number(stakePerLine) : 0;
   const totalStake = useMemo(
-    () => calculateTotalStake(combinations, stakeValue),
-    [combinations, stakeValue]
+    () => calculateTotalStake(lines, stakeValue),
+    [lines, stakeValue]
   );
 
   function toggleHorseSelection(horseNumber: number) {
@@ -151,8 +151,8 @@ export default function Home() {
                 <span className="font-semibold">{selectedHorseNumbers.length}</span>
               </p>
               <p className="mt-2 flex justify-between">
-                <span>Combinations</span>
-                <span className="font-semibold">{combinations}</span>
+                <span>Number of lines</span>
+                <span className="font-semibold">{lines}</span>
               </p>
               <p className="mt-2 flex justify-between">
                 <span>Total stake</span>
@@ -162,7 +162,7 @@ export default function Home() {
 
             <button
               type="button"
-              disabled={combinations === 0 || stakeValue === 0}
+              disabled={lines === 0 || stakeValue === 0}
               className="w-full rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
             >
               Place Bet
