@@ -32,6 +32,7 @@ const RACE = {
   ] satisfies Horse[],
 };
 const BET_TYPES: BetType[] = ["WIN", "PLACE", "EXACTA_BOXED", "TRIFECTA_BOXED"];
+const INITIAL_COUNTDOWN_SECONDS = 2 * 60;
 
 export default function Home() {
   const [selectedHorseNumbers, setSelectedHorseNumbers] = useState<number[]>([]);
@@ -44,6 +45,7 @@ export default function Home() {
   });
   const [stakePerLine, setStakePerLine] = useState<string>("1");
   const [isPlacingBet, setIsPlacingBet] = useState(false);
+  const [secondsRemaining, setSecondsRemaining] = useState<number>(INITIAL_COUNTDOWN_SECONDS);
   const [balance, setBalance] = useState<number | null>(null);
   const [balanceError, setBalanceError] = useState<string | null>(null);
   const [placedBetSummary, setPlacedBetSummary] = useState<{
@@ -83,6 +85,7 @@ export default function Home() {
     () => BET_TYPES.filter((type) => enabledBetTypes[type]),
     [enabledBetTypes]
   );
+  const raceStatus = secondsRemaining > 0 ? "OPEN" : "CLOSED";
   const isSelectedBetTypeEnabled = enabledBetTypes[betType];
   const hasValidSelectionForBetType = useMemo(() => {
     if (betType === "EXACTA_BOXED") {
@@ -97,7 +100,16 @@ export default function Home() {
   }, [betType, selectedHorseNumbers.length]);
   const hasValidStake = stakePerLine.trim() !== "" && stakeValue > 0;
   const canPlaceBet =
-    isSelectedBetTypeEnabled && hasValidSelectionForBetType && hasValidStake && !isPlacingBet;
+    raceStatus === "OPEN" &&
+    isSelectedBetTypeEnabled &&
+    hasValidSelectionForBetType &&
+    hasValidStake &&
+    !isPlacingBet;
+  const formattedCountdown = useMemo(() => {
+    const minutes = Math.floor(secondsRemaining / 60);
+    const seconds = secondsRemaining % 60;
+    return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+  }, [secondsRemaining]);
 
   useEffect(() => {
     async function fetchBalance() {
@@ -119,6 +131,18 @@ export default function Home() {
 
     fetchBalance();
   }, []);
+
+  useEffect(() => {
+    if (secondsRemaining <= 0) {
+      return;
+    }
+
+    const intervalId = setInterval(() => {
+      setSecondsRemaining((prev) => Math.max(0, prev - 1));
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [secondsRemaining]);
 
   useEffect(() => {
     if (!isSelectedBetTypeEnabled) {
@@ -220,6 +244,15 @@ export default function Home() {
             </p>
             <p className="mt-2 text-sm font-medium text-slate-700">
               Balance: {balance === null ? "Loading..." : balance.toFixed(2)}
+            </p>
+            <p className="mt-1 text-sm font-medium text-slate-700">
+              Status:{" "}
+              <span className={raceStatus === "OPEN" ? "text-green-700" : "text-red-700"}>
+                {raceStatus}
+              </span>
+            </p>
+            <p className="mt-1 text-sm text-slate-700">
+              Race starts in: {formattedCountdown}
             </p>
             {balanceError ? (
               <p className="mt-1 text-sm text-red-700">{balanceError}</p>
@@ -323,7 +356,11 @@ export default function Home() {
               disabled={!canPlaceBet}
               className="w-full rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
             >
-              {isPlacingBet ? "Placing Bet..." : "Place Bet"}
+              {raceStatus === "CLOSED"
+                ? "Betting Closed"
+                : isPlacingBet
+                  ? "Placing Bet..."
+                  : "Place Bet"}
             </button>
 
             {placeBetError ? (
