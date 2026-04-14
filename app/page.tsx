@@ -85,6 +85,7 @@ export default function Home() {
     () => BET_TYPES.filter((type) => enabledBetTypes[type]),
     [enabledBetTypes]
   );
+  const defaultBetType = enabledBetTypeOptions[0] ?? "WIN";
   const raceStatus = secondsRemaining > 0 ? "OPEN" : "CLOSED";
   const isSelectedBetTypeEnabled = enabledBetTypes[betType];
   const hasValidSelectionForBetType = useMemo(() => {
@@ -199,6 +200,8 @@ export default function Home() {
         typeof prevBalance === "number" ? Math.max(0, prevBalance - payload.totalStake) : prevBalance
       );
       setSelectedHorseNumbers([]);
+      setStakePerLine("1");
+      setBetType(defaultBetType);
     } catch {
       setPlaceBetError("Unable to place bet. Please try again.");
     } finally {
@@ -211,6 +214,11 @@ export default function Home() {
       ...prev,
       [type]: !prev[type],
     }));
+  }
+
+  function handlePlaceAnotherBet() {
+    setPlacedBetSummary(null);
+    setPlaceBetError(null);
   }
 
   return (
@@ -350,18 +358,28 @@ export default function Home() {
               </p>
             </div>
 
-            <button
-              type="button"
-              onClick={handlePlaceBet}
-              disabled={!canPlaceBet}
-              className="w-full rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
-            >
-              {raceStatus === "CLOSED"
-                ? "Betting Closed"
-                : isPlacingBet
-                  ? "Placing Bet..."
-                  : "Place Bet"}
-            </button>
+            {placedBetSummary ? (
+              <button
+                type="button"
+                onClick={handlePlaceAnotherBet}
+                className="w-full rounded-md bg-slate-800 px-4 py-2 font-medium text-white transition hover:bg-slate-900"
+              >
+                Place Another Bet
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handlePlaceBet}
+                disabled={!canPlaceBet}
+                className="w-full rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+              >
+                {raceStatus === "CLOSED"
+                  ? "Betting Closed"
+                  : isPlacingBet
+                    ? "Placing Bet..."
+                    : "Place Bet"}
+              </button>
+            )}
 
             {placeBetError ? (
               <div className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">
