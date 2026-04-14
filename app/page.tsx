@@ -66,6 +66,13 @@ export default function Home() {
     () => calculateTotalStake(lines, stakeValue),
     [lines, stakeValue]
   );
+  const selectedHorseNames = useMemo(
+    () =>
+      RACE.horses
+        .filter((horse) => selectedHorseNumbers.includes(horse.number))
+        .map((horse) => horse.name),
+    [selectedHorseNumbers]
+  );
   const hasValidSelectionForBetType = useMemo(() => {
     if (betType === "EXACTA_BOXED") {
       return selectedHorseNumbers.length >= 2;
@@ -242,8 +249,10 @@ export default function Home() {
 
             <div className="rounded-md bg-slate-50 p-4 text-sm">
               <p className="flex justify-between">
-                <span>Selected horses</span>
-                <span className="font-semibold">{selectedHorseNumbers.length}</span>
+                <span>{selectedHorseNames.length === 1 ? "Selection" : "Selections"}</span>
+                <span className="max-w-[60%] text-right font-semibold">
+                  {selectedHorseNames.length > 0 ? selectedHorseNames.join(", ") : "-"}
+                </span>
               </p>
               <p className="mt-2 flex justify-between">
                 <span>Number of lines</span>
