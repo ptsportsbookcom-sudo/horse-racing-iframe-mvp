@@ -85,6 +85,13 @@ export default function Home() {
         .map((horse) => horse.name),
     [selectedHorseNumbers]
   );
+  const selectedHorseOdds = useMemo(
+    () =>
+      RACE.horses
+        .filter((horse) => selectedHorseNumbers.includes(horse.number))
+        .map((horse) => Number(horse.odds)),
+    [selectedHorseNumbers]
+  );
   const enabledBetTypeOptions = useMemo(
     () => BET_TYPES.filter((type) => enabledBetTypes[type]),
     [enabledBetTypes]
@@ -115,6 +122,18 @@ export default function Home() {
     const seconds = secondsRemaining % 60;
     return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
   }, [secondsRemaining]);
+  const averageOdds = useMemo(() => {
+    if (selectedHorseOdds.length === 0) {
+      return 0;
+    }
+
+    const totalOdds = selectedHorseOdds.reduce((sum, odds) => sum + odds, 0);
+    return totalOdds / selectedHorseOdds.length;
+  }, [selectedHorseOdds]);
+  const estimatedReturns = useMemo(
+    () => totalStake * averageOdds,
+    [totalStake, averageOdds]
+  );
 
   function sendParentMessage(message: ParentMessage) {
     if (typeof window === "undefined") {
@@ -377,8 +396,13 @@ export default function Home() {
             </div>
 
             <div className="rounded-md bg-slate-50 p-4 text-sm">
-              <p className="flex justify-between">
-                <span>{selectedHorseNames.length === 1 ? "Selection" : "Selections"}</span>
+              <p className="font-semibold text-slate-800">Bet Summary</p>
+              <p className="mt-2 flex justify-between">
+                <span>Bet type</span>
+                <span className="font-semibold">{betType}</span>
+              </p>
+              <p className="mt-2 flex justify-between">
+                <span>{selectedHorseNames.length === 1 ? "Selected horse" : "Selected horses"}</span>
                 <span className="max-w-[60%] text-right font-semibold">
                   {selectedHorseNames.length > 0 ? selectedHorseNames.join(", ") : "-"}
                 </span>
@@ -388,8 +412,26 @@ export default function Home() {
                 <span className="font-semibold">{lines}</span>
               </p>
               <p className="mt-2 flex justify-between">
+                <span>Stake per line</span>
+                <span className="font-semibold">{stakeValue.toFixed(2)}</span>
+              </p>
+              <p className="mt-2 flex justify-between">
                 <span>Total stake</span>
                 <span className="font-semibold">{totalStake.toFixed(2)}</span>
+              </p>
+            </div>
+
+            <div className="rounded-md border border-blue-100 bg-blue-50 p-4 text-sm">
+              <p className="font-semibold text-slate-800">Estimated Returns</p>
+              <p className="mt-2 flex justify-between">
+                <span>Average odds</span>
+                <span className="font-semibold">
+                  {selectedHorseOdds.length > 0 ? averageOdds.toFixed(2) : "-"}
+                </span>
+              </p>
+              <p className="mt-2 flex justify-between">
+                <span>Estimated payout</span>
+                <span className="font-semibold">{estimatedReturns.toFixed(2)}</span>
               </p>
             </div>
 
