@@ -6,16 +6,17 @@ export default function EmbedTestPage() {
   return (
     <main className="min-h-screen bg-slate-100 p-6">
       <div className="mx-auto max-w-6xl">
-        <h1 className="mb-2 text-2xl font-bold text-slate-900">Embed Test</h1>
+        <h1 className="mb-2 text-2xl font-bold text-slate-900">Iframe Demo</h1>
         <p className="mb-4 text-sm text-slate-600">
           Loading app in an iframe with mock token.
         </p>
 
-        <div className="overflow-hidden rounded-lg border border-slate-300 bg-white shadow-sm">
+        <div className="overflow-hidden rounded-lg border border-slate-400 bg-white shadow-sm">
           <iframe
             title="Horse Racing App Embed"
             src={iframeSrc}
-            className="h-[80vh] w-full border-0"
+            onLoad={() => console.log("Iframe loaded")}
+            className="h-[800px] w-full border"
           />
         </div>
       </div>
