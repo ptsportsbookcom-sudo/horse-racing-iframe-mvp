@@ -97,6 +97,7 @@ export default function Home() {
     selectedHorses: number[];
     totalStake: number;
   } | null>(null);
+  const [settlementMessage, setSettlementMessage] = useState<string | null>(null);
   const [placeBetError, setPlaceBetError] = useState<string | null>(null);
 
   const lines = useMemo(() => {
@@ -192,6 +193,14 @@ export default function Home() {
     () => totalStake * averageOdds,
     [totalStake, averageOdds]
   );
+  const winningHorseOdds = useMemo(() => {
+    if (!winningHorseNumber) {
+      return null;
+    }
+
+    const winner = RACE.horses.find((horse) => horse.number === winningHorseNumber);
+    return winner ? Number(winner.odds) : null;
+  }, [winningHorseNumber]);
   const formattedAverageOdds =
     selectedHorseOdds.length === 0
       ? "-"
@@ -295,6 +304,25 @@ export default function Home() {
   }, [raceStatus]);
 
   useEffect(() => {
+    if (raceStatus !== "RESULTED" || !winningHorseNumber || !placedBetSummary) {
+      return;
+    }
+
+    const isWinningSelection = placedBetSummary.selectedHorses.includes(winningHorseNumber);
+    if (!isWinningSelection) {
+      setSettlementMessage("You lost");
+      return;
+    }
+
+    const oddsMultiplier =
+      typeof winningHorseOdds === "number" && Number.isFinite(winningHorseOdds)
+        ? winningHorseOdds
+        : 1;
+    const winnings = placedBetSummary.totalStake * oddsMultiplier;
+    setSettlementMessage(`You won €${winnings.toFixed(2)}`);
+  }, [raceStatus, winningHorseNumber, placedBetSummary, winningHorseOdds]);
+
+  useEffect(() => {
     if (!isSelectedBetTypeEnabled) {
       const firstEnabledType = enabledBetTypeOptions[0];
       if (firstEnabledType) {
@@ -345,6 +373,7 @@ export default function Home() {
         selectedHorses: payload.selectedHorses,
         totalStake: payload.totalStake,
       });
+      setSettlementMessage(null);
       setBalance((prevBalance) =>
         typeof prevBalance === "number" ? Math.max(0, prevBalance - payload.totalStake) : prevBalance
       );
@@ -369,6 +398,7 @@ export default function Home() {
   function handlePlaceAnotherBet() {
     setPlacedBetSummary(null);
     setPlaceBetError(null);
+    setSettlementMessage(null);
   }
 
   return (
@@ -635,6 +665,18 @@ export default function Home() {
                   <span className="font-medium">Total stake:</span>{" "}
                   {placedBetSummary.totalStake.toFixed(2)}
                 </p>
+              </div>
+            ) : null}
+
+            {raceStatus === "RESULTED" && settlementMessage ? (
+              <div
+                className={`rounded-md border p-4 text-sm ${
+                  settlementMessage.startsWith("You won")
+                    ? "border-emerald-700/60 bg-emerald-500/10 text-emerald-200"
+                    : "border-rose-700/60 bg-rose-500/10 text-rose-200"
+                }`}
+              >
+                <p className="font-semibold">{settlementMessage}</p>
               </div>
             ) : null}
           </div>
