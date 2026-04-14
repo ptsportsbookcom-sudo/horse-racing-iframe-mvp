@@ -63,6 +63,19 @@ export default function Home() {
     () => calculateTotalStake(lines, stakeValue),
     [lines, stakeValue]
   );
+  const hasValidSelectionForBetType = useMemo(() => {
+    if (betType === "EXACTA_BOXED") {
+      return selectedHorseNumbers.length >= 2;
+    }
+
+    if (betType === "TRIFECTA_BOXED") {
+      return selectedHorseNumbers.length >= 3;
+    }
+
+    return selectedHorseNumbers.length > 0;
+  }, [betType, selectedHorseNumbers.length]);
+  const hasValidStake = stakePerLine.trim() !== "" && stakeValue > 0;
+  const canPlaceBet = hasValidSelectionForBetType && hasValidStake && !isPlacingBet;
 
   function toggleHorseSelection(horseNumber: number) {
     setSelectedHorseNumbers((prev) =>
@@ -73,7 +86,7 @@ export default function Home() {
   }
 
   async function handlePlaceBet() {
-    if (lines === 0 || stakeValue === 0 || isPlacingBet) {
+    if (!canPlaceBet) {
       return;
     }
 
@@ -212,7 +225,7 @@ export default function Home() {
             <button
               type="button"
               onClick={handlePlaceBet}
-              disabled={lines === 0 || stakeValue === 0 || isPlacingBet}
+              disabled={!canPlaceBet}
               className="w-full rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
             >
               {isPlacingBet ? "Placing Bet..." : "Place Bet"}
