@@ -36,6 +36,13 @@ export default function Home() {
   const [selectedHorseNumbers, setSelectedHorseNumbers] = useState<number[]>([]);
   const [betType, setBetType] = useState<BetType>("WIN");
   const [stakePerLine, setStakePerLine] = useState<string>("1");
+  const [isPlacingBet, setIsPlacingBet] = useState(false);
+  const [placedBetSummary, setPlacedBetSummary] = useState<{
+    betType: BetType;
+    selectedHorses: number[];
+    totalStake: number;
+  } | null>(null);
+  const [placeBetError, setPlaceBetError] = useState<string | null>(null);
 
   const lines = useMemo(() => {
     switch (betType) {
@@ -63,6 +70,48 @@ export default function Home() {
         ? prev.filter((number) => number !== horseNumber)
         : [...prev, horseNumber]
     );
+  }
+
+  async function handlePlaceBet() {
+    if (lines === 0 || stakeValue === 0 || isPlacingBet) {
+      return;
+    }
+
+    const payload = {
+      betType,
+      selectedHorses: selectedHorseNumbers,
+      stakePerLine: stakeValue,
+      totalStake,
+      numberOfLines: lines,
+    };
+
+    setIsPlacingBet(true);
+    setPlaceBetError(null);
+
+    try {
+      const response = await fetch("/api/place-bet", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to place bet");
+      }
+
+      setPlacedBetSummary({
+        betType: payload.betType,
+        selectedHorses: payload.selectedHorses,
+        totalStake: payload.totalStake,
+      });
+      setSelectedHorseNumbers([]);
+    } catch {
+      setPlaceBetError("Unable to place bet. Please try again.");
+    } finally {
+      setIsPlacingBet(false);
+    }
   }
 
   return (
@@ -162,11 +211,36 @@ export default function Home() {
 
             <button
               type="button"
-              disabled={lines === 0 || stakeValue === 0}
+              onClick={handlePlaceBet}
+              disabled={lines === 0 || stakeValue === 0 || isPlacingBet}
               className="w-full rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
             >
-              Place Bet
+              {isPlacingBet ? "Placing Bet..." : "Place Bet"}
             </button>
+
+            {placeBetError ? (
+              <div className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+                {placeBetError}
+              </div>
+            ) : null}
+
+            {placedBetSummary ? (
+              <div className="rounded-md border border-green-200 bg-green-50 p-4 text-sm text-green-800">
+                <p className="font-semibold">Bet placed successfully</p>
+                <p className="mt-2">
+                  <span className="font-medium">Bet type:</span>{" "}
+                  {placedBetSummary.betType}
+                </p>
+                <p className="mt-1">
+                  <span className="font-medium">Selected horses:</span>{" "}
+                  {placedBetSummary.selectedHorses.join(", ")}
+                </p>
+                <p className="mt-1">
+                  <span className="font-medium">Total stake:</span>{" "}
+                  {placedBetSummary.totalStake.toFixed(2)}
+                </p>
+              </div>
+            ) : null}
           </div>
         </aside>
       </div>
