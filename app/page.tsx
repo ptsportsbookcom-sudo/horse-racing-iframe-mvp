@@ -17,6 +17,7 @@ type BetType =
   | "EXACTA_STRAIGHT"
   | "TRIFECTA_STRAIGHT";
 type OddsFormat = "DECIMAL" | "FRACTIONAL";
+type RaceStatus = "OPEN" | "CLOSED" | "RESULTED";
 type ParentMessage = {
   type: string;
   payload?: unknown;
@@ -53,6 +54,7 @@ const BET_TYPES: BetType[] = [
   "TRIFECTA_STRAIGHT",
 ];
 const INITIAL_COUNTDOWN_SECONDS = 2 * 60;
+const RESULT_DELAY_MS = 8000;
 
 function gcd(a: number, b: number): number {
   return b === 0 ? a : gcd(b, a % b);
@@ -86,6 +88,8 @@ export default function Home() {
   const [oddsFormat, setOddsFormat] = useState<OddsFormat>("DECIMAL");
   const [isPlacingBet, setIsPlacingBet] = useState(false);
   const [secondsRemaining, setSecondsRemaining] = useState<number>(INITIAL_COUNTDOWN_SECONDS);
+  const [raceStatus, setRaceStatus] = useState<RaceStatus>("OPEN");
+  const [winningHorseNumber, setWinningHorseNumber] = useState<number | null>(null);
   const [balance, setBalance] = useState<number | null>(null);
   const [balanceError, setBalanceError] = useState<string | null>(null);
   const [placedBetSummary, setPlacedBetSummary] = useState<{
@@ -140,7 +144,10 @@ export default function Home() {
     [enabledBetTypes]
   );
   const defaultBetType = enabledBetTypeOptions[0] ?? "WIN";
-  const raceStatus = secondsRemaining > 0 ? "OPEN" : "CLOSED";
+  const winningHorse = useMemo(
+    () => RACE.horses.find((horse) => horse.number === winningHorseNumber) ?? null,
+    [winningHorseNumber]
+  );
   const isSelectedBetTypeEnabled = enabledBetTypes[betType];
   const hasValidSelectionForBetType = useMemo(() => {
     if (betType === "EXACTA_BOXED") {
@@ -256,7 +263,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (secondsRemaining <= 0) {
+    if (raceStatus !== "OPEN" || secondsRemaining <= 0) {
       return;
     }
 
@@ -265,7 +272,27 @@ export default function Home() {
     }, 1000);
 
     return () => clearInterval(intervalId);
-  }, [secondsRemaining]);
+  }, [secondsRemaining, raceStatus]);
+
+  useEffect(() => {
+    if (raceStatus === "OPEN" && secondsRemaining === 0) {
+      setRaceStatus("CLOSED");
+    }
+  }, [secondsRemaining, raceStatus]);
+
+  useEffect(() => {
+    if (raceStatus !== "CLOSED") {
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      const winner = RACE.horses[Math.floor(Math.random() * RACE.horses.length)];
+      setWinningHorseNumber(winner.number);
+      setRaceStatus("RESULTED");
+    }, RESULT_DELAY_MS);
+
+    return () => clearTimeout(timeoutId);
+  }, [raceStatus]);
 
   useEffect(() => {
     if (!isSelectedBetTypeEnabled) {
@@ -378,13 +405,26 @@ export default function Home() {
             </p>
             <p className="mt-1 text-sm font-medium text-[#e2e8f0]">
               Status:{" "}
-              <span className={raceStatus === "OPEN" ? "text-emerald-400" : "text-rose-400"}>
+              <span
+                className={
+                  raceStatus === "OPEN"
+                    ? "text-emerald-400"
+                    : raceStatus === "CLOSED"
+                      ? "text-amber-300"
+                      : "text-sky-300"
+                }
+              >
                 {raceStatus}
               </span>
             </p>
             <p className="mt-1 text-sm text-[#94a3b8]">
               Race starts in: {formattedCountdown}
             </p>
+            {winningHorse ? (
+              <p className="mt-1 text-sm font-medium text-sky-300">
+                Winning horse: {winningHorse.number}. {winningHorse.name}
+              </p>
+            ) : null}
             {balanceError ? (
               <p className="mt-1 text-sm text-rose-400">{balanceError}</p>
             ) : null}
@@ -423,6 +463,7 @@ export default function Home() {
           <div className="space-y-3">
             {RACE.horses.map((horse) => {
               const isSelected = selectedHorseNumbers.includes(horse.number);
+              const isWinningHorse = horse.number === winningHorseNumber;
 
               return (
                 <button
@@ -430,7 +471,9 @@ export default function Home() {
                   type="button"
                   onClick={() => toggleHorseSelection(horse.number)}
                   className={`flex w-full items-center justify-between rounded-lg border px-4 py-3 text-left transition ${
-                    isSelected
+                    isWinningHorse
+                      ? "border-sky-300 bg-sky-500/20 shadow-md shadow-sky-400/20"
+                      : isSelected
                       ? "border-emerald-400 bg-emerald-500/15 shadow-md shadow-emerald-500/20"
                       : "border-slate-600 bg-[#0f172a] hover:border-slate-400 hover:bg-slate-800/80"
                   }`}
@@ -447,12 +490,14 @@ export default function Home() {
                     </p>
                     <span
                     className={`rounded px-2 py-1 text-xs font-semibold ${
-                      isSelected
+                      isWinningHorse
+                        ? "bg-sky-300 text-slate-950"
+                        : isSelected
                         ? "bg-emerald-500 text-slate-950"
                         : "bg-slate-700 text-[#e2e8f0]"
                     }`}
                   >
-                    {isSelected ? "Selected" : "Select"}
+                    {isWinningHorse ? "Winner" : isSelected ? "Selected" : "Select"}
                   </span>
                   </div>
                 </button>
