@@ -276,20 +276,20 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-950 p-6 text-slate-100">
+    <main className="min-h-screen bg-[#0f172a] p-6 text-[#e2e8f0]">
       <div className="mx-auto max-w-6xl">
-        <section className="mb-6 rounded-xl border border-slate-700 bg-slate-900 p-4 shadow-lg shadow-black/30">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-300">
+        <section className="mb-6 rounded-xl border border-slate-600 bg-[#1e293b] p-4 shadow-lg shadow-black/30">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-[#94a3b8]">
             Operator Settings
           </h2>
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
             {BET_TYPES.map((type) => (
-              <label key={type} className="flex items-center gap-2 text-sm text-slate-200">
+              <label key={type} className="flex items-center gap-2 text-sm text-[#e2e8f0]">
                 <input
                   type="checkbox"
                   checked={enabledBetTypes[type]}
                   onChange={() => toggleBetType(type)}
-                  className="h-4 w-4 rounded border-slate-500 bg-slate-800 text-emerald-500"
+                  className="h-4 w-4 rounded border-slate-500 bg-slate-700 text-emerald-500"
                 />
                 <span>{type}</span>
               </label>
@@ -298,22 +298,22 @@ export default function Home() {
         </section>
 
         <div className="grid w-full gap-6 lg:grid-cols-[2fr_1fr]">
-        <section className="rounded-xl border border-slate-700 bg-slate-900 p-6 shadow-lg shadow-black/30">
+        <section className="rounded-xl border border-slate-600 bg-[#1e293b] p-6 shadow-lg shadow-black/30">
           <div className="mb-6">
             <h1 className="text-2xl font-bold">Horse Racing MVP</h1>
-            <p className="mt-1 text-sm text-slate-400">
+            <p className="mt-1 text-sm text-[#94a3b8]">
               {RACE.title} - {RACE.time}
             </p>
-            <p className="mt-2 text-sm font-medium text-slate-200">
+            <p className="mt-2 text-sm font-medium text-[#e2e8f0]">
               Balance: {balance === null ? "Loading..." : balance.toFixed(2)}
             </p>
-            <p className="mt-1 text-sm font-medium text-slate-200">
+            <p className="mt-1 text-sm font-medium text-[#e2e8f0]">
               Status:{" "}
               <span className={raceStatus === "OPEN" ? "text-emerald-400" : "text-rose-400"}>
                 {raceStatus}
               </span>
             </p>
-            <p className="mt-1 text-sm text-slate-300">
+            <p className="mt-1 text-sm text-[#94a3b8]">
               Race starts in: {formattedCountdown}
             </p>
             {balanceError ? (
@@ -330,46 +330,51 @@ export default function Home() {
                   key={horse.number}
                   type="button"
                   onClick={() => toggleHorseSelection(horse.number)}
-                  className={`flex w-full items-center justify-between rounded-md border px-4 py-3 text-left transition ${
+                  className={`flex w-full items-center justify-between rounded-lg border px-4 py-3 text-left transition ${
                     isSelected
-                      ? "border-emerald-400 bg-emerald-500/20 shadow-md shadow-emerald-500/20"
-                      : "border-slate-700 bg-slate-800 hover:border-slate-500"
+                      ? "border-emerald-400 bg-emerald-500/15 shadow-md shadow-emerald-500/20"
+                      : "border-slate-600 bg-[#0f172a] hover:border-slate-400 hover:bg-slate-800/80"
                   }`}
                 >
-                  <div>
-                    <p className="font-semibold">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-[#e2e8f0]">
                       {horse.number}. {horse.name}
                     </p>
-                    <p className="text-sm text-slate-300">
-                      Odds: <span className="text-base font-extrabold text-amber-300">{horse.odds}</span>
-                    </p>
+                    <p className="text-xs text-[#94a3b8]">Runner</p>
                   </div>
-                  <span
-                    className={`rounded px-2 py-1 text-xs font-medium ${
+                  <div className="flex items-center gap-3">
+                    <p className="text-right text-2xl font-extrabold leading-none text-amber-300">
+                      {horse.odds}
+                    </p>
+                    <span
+                    className={`rounded px-2 py-1 text-xs font-semibold ${
                       isSelected
                         ? "bg-emerald-500 text-slate-950"
-                        : "bg-slate-700 text-slate-200"
+                        : "bg-slate-700 text-[#e2e8f0]"
                     }`}
                   >
                     {isSelected ? "Selected" : "Select"}
                   </span>
+                  </div>
                 </button>
               );
             })}
           </div>
         </section>
 
-        <aside className="rounded-xl border border-slate-700 bg-slate-900 p-6 shadow-lg shadow-black/30">
+        <aside className="self-start rounded-xl border border-slate-600 bg-[#1e293b] p-6 shadow-lg shadow-black/30 lg:sticky lg:top-6">
           <h2 className="text-lg font-semibold">Bet Slip</h2>
 
           <div className="mt-5 space-y-5">
-            <div className="rounded-lg border border-slate-700 bg-slate-800/40 p-4">
-              <label className="mb-2 block text-sm font-medium text-slate-200">Bet Type</label>
+            <div className="rounded-lg border border-slate-600 bg-[#0f172a] p-4">
+              <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-[#94a3b8]">
+                Bet Type
+              </label>
               <select
                 value={betType}
                 onChange={(event) => setBetType(event.target.value as BetType)}
                 disabled={enabledBetTypeOptions.length === 0}
-                className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-100"
+                className="w-full rounded-md border border-slate-500 bg-[#1e293b] px-3 py-2 text-sm text-[#e2e8f0]"
               >
                 {enabledBetTypeOptions.map((type) => (
                   <option key={type} value={type}>
@@ -378,12 +383,15 @@ export default function Home() {
                 ))}
               </select>
               {enabledBetTypeOptions.length === 0 ? (
-                <p className="mt-2 text-xs text-slate-400">No bet types are enabled.</p>
+                <p className="mt-2 text-xs text-[#94a3b8]">No bet types are enabled.</p>
               ) : null}
             </div>
 
-            <div className="rounded-lg border border-slate-700 bg-slate-800/40 p-4">
-              <label htmlFor="stake" className="mb-2 block text-sm font-medium text-slate-200">
+            <div className="rounded-lg border border-slate-600 bg-[#0f172a] p-4">
+              <label
+                htmlFor="stake"
+                className="mb-2 block text-xs font-medium uppercase tracking-wide text-[#94a3b8]"
+              >
                 Stake per line
               </label>
               <input
@@ -393,46 +401,48 @@ export default function Home() {
                 step="0.5"
                 value={stakePerLine}
                 onChange={(event) => setStakePerLine(event.target.value)}
-                className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-100"
+                className="w-full rounded-md border border-slate-500 bg-[#1e293b] px-3 py-2 text-sm text-[#e2e8f0]"
               />
             </div>
 
-            <div className="rounded-lg border border-slate-700 bg-slate-800 p-4 text-sm">
-              <p className="font-semibold text-slate-100">Bet Summary</p>
+            <div className="rounded-lg border border-slate-600 bg-[#0f172a] p-4 text-sm">
+              <p className="font-semibold text-[#e2e8f0]">Bet Summary</p>
               <p className="mt-2 flex justify-between">
-                <span>Bet type</span>
+                <span className="text-xs uppercase tracking-wide text-[#94a3b8]">Bet type</span>
                 <span className="font-semibold">{betType}</span>
               </p>
               <p className="mt-2 flex justify-between">
-                <span>{selectedHorseNames.length === 1 ? "Selected horse" : "Selected horses"}</span>
+                <span className="text-xs uppercase tracking-wide text-[#94a3b8]">
+                  {selectedHorseNames.length === 1 ? "Selected horse" : "Selected horses"}
+                </span>
                 <span className="max-w-[60%] text-right font-semibold">
                   {selectedHorseNames.length > 0 ? selectedHorseNames.join(", ") : "-"}
                 </span>
               </p>
               <p className="mt-2 flex justify-between">
-                <span>Number of lines</span>
+                <span className="text-xs uppercase tracking-wide text-[#94a3b8]">Number of lines</span>
                 <span className="font-semibold">{lines}</span>
               </p>
               <p className="mt-2 flex justify-between">
-                <span>Stake per line</span>
+                <span className="text-xs uppercase tracking-wide text-[#94a3b8]">Stake per line</span>
                 <span className="font-semibold">{stakeValue.toFixed(2)}</span>
               </p>
               <p className="mt-2 flex justify-between">
-                <span>Total stake</span>
+                <span className="text-xs uppercase tracking-wide text-[#94a3b8]">Total stake</span>
                 <span className="font-semibold">{totalStake.toFixed(2)}</span>
               </p>
             </div>
 
-            <div className="rounded-lg border border-emerald-700/50 bg-emerald-500/10 p-4 text-sm">
-              <p className="font-semibold text-slate-100">Estimated Returns</p>
+            <div className="rounded-lg border border-emerald-700/50 bg-[#0f172a] p-4 text-sm">
+              <p className="font-semibold text-[#e2e8f0]">Estimated Returns</p>
               <p className="mt-2 flex justify-between">
-                <span>Average odds</span>
+                <span className="text-xs uppercase tracking-wide text-[#94a3b8]">Average odds</span>
                 <span className="font-semibold">
                   {selectedHorseOdds.length > 0 ? averageOdds.toFixed(2) : "-"}
                 </span>
               </p>
               <p className="mt-2 flex justify-between">
-                <span>Estimated payout</span>
+                <span className="text-xs uppercase tracking-wide text-[#94a3b8]">Estimated payout</span>
                 <span className="font-semibold text-emerald-300">{estimatedReturns.toFixed(2)}</span>
               </p>
             </div>
@@ -441,7 +451,7 @@ export default function Home() {
               <button
                 type="button"
                 onClick={handlePlaceAnotherBet}
-                className="w-full rounded-md bg-slate-700 px-4 py-2 font-medium text-white transition hover:bg-slate-600"
+                className="w-full rounded-md bg-slate-700 px-4 py-2 font-medium text-[#e2e8f0] transition hover:bg-slate-600"
               >
                 Place Another Bet
               </button>
@@ -450,13 +460,13 @@ export default function Home() {
                 type="button"
                 onClick={handlePlaceBet}
                 disabled={!canPlaceBet}
-                className="w-full rounded-md bg-emerald-500 px-4 py-2 font-semibold text-slate-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-slate-600 disabled:text-slate-300"
+                className="w-full rounded-md bg-emerald-500 px-4 py-3 font-semibold text-slate-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-slate-600 disabled:text-slate-300"
               >
                 {raceStatus === "CLOSED"
                   ? "Betting Closed"
                   : isPlacingBet
                     ? "Placing Bet..."
-                    : `Place Bet - ${totalStake.toFixed(2)}`}
+                    : `Place Bet (€${totalStake.toFixed(2)})`}
               </button>
             )}
 
