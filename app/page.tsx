@@ -276,20 +276,20 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 p-6 text-slate-900">
+    <main className="min-h-screen bg-slate-950 p-6 text-slate-100">
       <div className="mx-auto max-w-6xl">
-        <section className="mb-6 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-700">
+        <section className="mb-6 rounded-xl border border-slate-700 bg-slate-900 p-4 shadow-lg shadow-black/30">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-300">
             Operator Settings
           </h2>
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
             {BET_TYPES.map((type) => (
-              <label key={type} className="flex items-center gap-2 text-sm text-slate-700">
+              <label key={type} className="flex items-center gap-2 text-sm text-slate-200">
                 <input
                   type="checkbox"
                   checked={enabledBetTypes[type]}
                   onChange={() => toggleBetType(type)}
-                  className="h-4 w-4 rounded border-slate-300"
+                  className="h-4 w-4 rounded border-slate-500 bg-slate-800 text-emerald-500"
                 />
                 <span>{type}</span>
               </label>
@@ -298,26 +298,26 @@ export default function Home() {
         </section>
 
         <div className="grid w-full gap-6 lg:grid-cols-[2fr_1fr]">
-        <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+        <section className="rounded-xl border border-slate-700 bg-slate-900 p-6 shadow-lg shadow-black/30">
           <div className="mb-6">
             <h1 className="text-2xl font-bold">Horse Racing MVP</h1>
-            <p className="mt-1 text-sm text-slate-600">
+            <p className="mt-1 text-sm text-slate-400">
               {RACE.title} - {RACE.time}
             </p>
-            <p className="mt-2 text-sm font-medium text-slate-700">
+            <p className="mt-2 text-sm font-medium text-slate-200">
               Balance: {balance === null ? "Loading..." : balance.toFixed(2)}
             </p>
-            <p className="mt-1 text-sm font-medium text-slate-700">
+            <p className="mt-1 text-sm font-medium text-slate-200">
               Status:{" "}
-              <span className={raceStatus === "OPEN" ? "text-green-700" : "text-red-700"}>
+              <span className={raceStatus === "OPEN" ? "text-emerald-400" : "text-rose-400"}>
                 {raceStatus}
               </span>
             </p>
-            <p className="mt-1 text-sm text-slate-700">
+            <p className="mt-1 text-sm text-slate-300">
               Race starts in: {formattedCountdown}
             </p>
             {balanceError ? (
-              <p className="mt-1 text-sm text-red-700">{balanceError}</p>
+              <p className="mt-1 text-sm text-rose-400">{balanceError}</p>
             ) : null}
           </div>
 
@@ -332,21 +332,23 @@ export default function Home() {
                   onClick={() => toggleHorseSelection(horse.number)}
                   className={`flex w-full items-center justify-between rounded-md border px-4 py-3 text-left transition ${
                     isSelected
-                      ? "border-blue-600 bg-blue-50"
-                      : "border-slate-200 bg-white hover:border-slate-300"
+                      ? "border-emerald-400 bg-emerald-500/20 shadow-md shadow-emerald-500/20"
+                      : "border-slate-700 bg-slate-800 hover:border-slate-500"
                   }`}
                 >
                   <div>
                     <p className="font-semibold">
                       {horse.number}. {horse.name}
                     </p>
-                    <p className="text-sm text-slate-600">Odds: {horse.odds}</p>
+                    <p className="text-sm text-slate-300">
+                      Odds: <span className="text-base font-extrabold text-amber-300">{horse.odds}</span>
+                    </p>
                   </div>
                   <span
                     className={`rounded px-2 py-1 text-xs font-medium ${
                       isSelected
-                        ? "bg-blue-600 text-white"
-                        : "bg-slate-100 text-slate-700"
+                        ? "bg-emerald-500 text-slate-950"
+                        : "bg-slate-700 text-slate-200"
                     }`}
                   >
                     {isSelected ? "Selected" : "Select"}
@@ -357,17 +359,17 @@ export default function Home() {
           </div>
         </section>
 
-        <aside className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+        <aside className="rounded-xl border border-slate-700 bg-slate-900 p-6 shadow-lg shadow-black/30">
           <h2 className="text-lg font-semibold">Bet Slip</h2>
 
-          <div className="mt-5 space-y-4">
-            <div>
-              <label className="mb-2 block text-sm font-medium">Bet Type</label>
+          <div className="mt-5 space-y-5">
+            <div className="rounded-lg border border-slate-700 bg-slate-800/40 p-4">
+              <label className="mb-2 block text-sm font-medium text-slate-200">Bet Type</label>
               <select
                 value={betType}
                 onChange={(event) => setBetType(event.target.value as BetType)}
                 disabled={enabledBetTypeOptions.length === 0}
-                className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
+                className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-100"
               >
                 {enabledBetTypeOptions.map((type) => (
                   <option key={type} value={type}>
@@ -376,12 +378,12 @@ export default function Home() {
                 ))}
               </select>
               {enabledBetTypeOptions.length === 0 ? (
-                <p className="mt-2 text-xs text-slate-500">No bet types are enabled.</p>
+                <p className="mt-2 text-xs text-slate-400">No bet types are enabled.</p>
               ) : null}
             </div>
 
-            <div>
-              <label htmlFor="stake" className="mb-2 block text-sm font-medium">
+            <div className="rounded-lg border border-slate-700 bg-slate-800/40 p-4">
+              <label htmlFor="stake" className="mb-2 block text-sm font-medium text-slate-200">
                 Stake per line
               </label>
               <input
@@ -391,12 +393,12 @@ export default function Home() {
                 step="0.5"
                 value={stakePerLine}
                 onChange={(event) => setStakePerLine(event.target.value)}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                className="w-full rounded-md border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-100"
               />
             </div>
 
-            <div className="rounded-md bg-slate-50 p-4 text-sm">
-              <p className="font-semibold text-slate-800">Bet Summary</p>
+            <div className="rounded-lg border border-slate-700 bg-slate-800 p-4 text-sm">
+              <p className="font-semibold text-slate-100">Bet Summary</p>
               <p className="mt-2 flex justify-between">
                 <span>Bet type</span>
                 <span className="font-semibold">{betType}</span>
@@ -421,8 +423,8 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="rounded-md border border-blue-100 bg-blue-50 p-4 text-sm">
-              <p className="font-semibold text-slate-800">Estimated Returns</p>
+            <div className="rounded-lg border border-emerald-700/50 bg-emerald-500/10 p-4 text-sm">
+              <p className="font-semibold text-slate-100">Estimated Returns</p>
               <p className="mt-2 flex justify-between">
                 <span>Average odds</span>
                 <span className="font-semibold">
@@ -431,7 +433,7 @@ export default function Home() {
               </p>
               <p className="mt-2 flex justify-between">
                 <span>Estimated payout</span>
-                <span className="font-semibold">{estimatedReturns.toFixed(2)}</span>
+                <span className="font-semibold text-emerald-300">{estimatedReturns.toFixed(2)}</span>
               </p>
             </div>
 
@@ -439,7 +441,7 @@ export default function Home() {
               <button
                 type="button"
                 onClick={handlePlaceAnotherBet}
-                className="w-full rounded-md bg-slate-800 px-4 py-2 font-medium text-white transition hover:bg-slate-900"
+                className="w-full rounded-md bg-slate-700 px-4 py-2 font-medium text-white transition hover:bg-slate-600"
               >
                 Place Another Bet
               </button>
@@ -448,24 +450,24 @@ export default function Home() {
                 type="button"
                 onClick={handlePlaceBet}
                 disabled={!canPlaceBet}
-                className="w-full rounded-md bg-blue-600 px-4 py-2 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+                className="w-full rounded-md bg-emerald-500 px-4 py-2 font-semibold text-slate-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:bg-slate-600 disabled:text-slate-300"
               >
                 {raceStatus === "CLOSED"
                   ? "Betting Closed"
                   : isPlacingBet
                     ? "Placing Bet..."
-                    : "Place Bet"}
+                    : `Place Bet - ${totalStake.toFixed(2)}`}
               </button>
             )}
 
             {placeBetError ? (
-              <div className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+              <div className="rounded-md border border-rose-700/60 bg-rose-500/10 p-4 text-sm text-rose-300">
                 {placeBetError}
               </div>
             ) : null}
 
             {placedBetSummary ? (
-              <div className="rounded-md border border-green-200 bg-green-50 p-4 text-sm text-green-800">
+              <div className="rounded-md border border-emerald-700/60 bg-emerald-500/10 p-4 text-sm text-emerald-200">
                 <p className="font-semibold">Bet placed successfully</p>
                 <p className="mt-2">
                   <span className="font-medium">Bet type:</span>{" "}
