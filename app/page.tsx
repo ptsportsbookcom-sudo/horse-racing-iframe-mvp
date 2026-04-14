@@ -6,6 +6,7 @@ import {
   calculateTotalStake,
   calculateTrifectaBoxed,
 } from "@/lib/betting";
+import { useEffect } from "react";
 
 type BetType = "WIN" | "PLACE" | "EXACTA_BOXED" | "TRIFECTA_BOXED";
 
@@ -37,6 +38,8 @@ export default function Home() {
   const [betType, setBetType] = useState<BetType>("WIN");
   const [stakePerLine, setStakePerLine] = useState<string>("1");
   const [isPlacingBet, setIsPlacingBet] = useState(false);
+  const [balance, setBalance] = useState<number | null>(null);
+  const [balanceError, setBalanceError] = useState<string | null>(null);
   const [placedBetSummary, setPlacedBetSummary] = useState<{
     betType: BetType;
     selectedHorses: number[];
@@ -76,6 +79,27 @@ export default function Home() {
   }, [betType, selectedHorseNumbers.length]);
   const hasValidStake = stakePerLine.trim() !== "" && stakeValue > 0;
   const canPlaceBet = hasValidSelectionForBetType && hasValidStake && !isPlacingBet;
+
+  useEffect(() => {
+    async function fetchBalance() {
+      setBalanceError(null);
+
+      try {
+        const response = await fetch("/api/balance");
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch balance");
+        }
+
+        const data: { balance?: number } = await response.json();
+        setBalance(typeof data.balance === "number" ? data.balance : 0);
+      } catch {
+        setBalanceError("Unable to load balance.");
+      }
+    }
+
+    fetchBalance();
+  }, []);
 
   function toggleHorseSelection(horseNumber: number) {
     setSelectedHorseNumbers((prev) =>
@@ -119,6 +143,9 @@ export default function Home() {
         selectedHorses: payload.selectedHorses,
         totalStake: payload.totalStake,
       });
+      setBalance((prevBalance) =>
+        typeof prevBalance === "number" ? Math.max(0, prevBalance - payload.totalStake) : prevBalance
+      );
       setSelectedHorseNumbers([]);
     } catch {
       setPlaceBetError("Unable to place bet. Please try again.");
@@ -136,6 +163,12 @@ export default function Home() {
             <p className="mt-1 text-sm text-slate-600">
               {RACE.title} - {RACE.time}
             </p>
+            <p className="mt-2 text-sm font-medium text-slate-700">
+              Balance: {balance === null ? "Loading..." : balance.toFixed(2)}
+            </p>
+            {balanceError ? (
+              <p className="mt-1 text-sm text-red-700">{balanceError}</p>
+            ) : null}
           </div>
 
           <div className="space-y-3">
