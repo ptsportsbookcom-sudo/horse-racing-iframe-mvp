@@ -8,6 +8,10 @@ import {
 } from "@/lib/betting";
 
 type BetType = "WIN" | "PLACE" | "EXACTA_BOXED" | "TRIFECTA_BOXED";
+type ParentMessage = {
+  type: string;
+  payload?: unknown;
+};
 
 type Horse = {
   number: number;
@@ -112,6 +116,15 @@ export default function Home() {
     return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
   }, [secondsRemaining]);
 
+  function sendParentMessage(message: ParentMessage) {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    console.log("Outgoing iframe message:", message);
+    window.parent.postMessage(message, "*");
+  }
+
   useEffect(() => {
     async function fetchBalance() {
       setBalanceError(null);
@@ -131,6 +144,27 @@ export default function Home() {
     }
 
     fetchBalance();
+  }, []);
+
+  useEffect(() => {
+    const handleParentMessage = (event: MessageEvent<ParentMessage>) => {
+      console.log("Incoming iframe message:", event.data);
+
+      if (event.data?.type === "BALANCE_UPDATE") {
+        const nextBalance = (event.data.payload as { balance?: unknown } | undefined)?.balance;
+        if (typeof nextBalance === "number") {
+          setBalance(nextBalance);
+          setBalanceError(null);
+        }
+      }
+    };
+
+    window.addEventListener("message", handleParentMessage);
+    sendParentMessage({ type: "GET_BALANCE" });
+
+    return () => {
+      window.removeEventListener("message", handleParentMessage);
+    };
   }, []);
 
   useEffect(() => {
@@ -202,6 +236,7 @@ export default function Home() {
       setSelectedHorseNumbers([]);
       setStakePerLine("1");
       setBetType(defaultBetType);
+      sendParentMessage({ type: "BET_PLACED", payload });
     } catch {
       setPlaceBetError("Unable to place bet. Please try again.");
     } finally {
