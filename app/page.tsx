@@ -1,12 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   calculateExactaBoxed,
   calculateTotalStake,
   calculateTrifectaBoxed,
 } from "@/lib/betting";
-import { useEffect } from "react";
 
 type BetType = "WIN" | "PLACE" | "EXACTA_BOXED" | "TRIFECTA_BOXED";
 
@@ -32,10 +31,17 @@ const RACE = {
     { number: 10, name: "Royal Legend", odds: "10.00" },
   ] satisfies Horse[],
 };
+const BET_TYPES: BetType[] = ["WIN", "PLACE", "EXACTA_BOXED", "TRIFECTA_BOXED"];
 
 export default function Home() {
   const [selectedHorseNumbers, setSelectedHorseNumbers] = useState<number[]>([]);
   const [betType, setBetType] = useState<BetType>("WIN");
+  const [enabledBetTypes, setEnabledBetTypes] = useState<Record<BetType, boolean>>({
+    WIN: true,
+    PLACE: true,
+    EXACTA_BOXED: true,
+    TRIFECTA_BOXED: true,
+  });
   const [stakePerLine, setStakePerLine] = useState<string>("1");
   const [isPlacingBet, setIsPlacingBet] = useState(false);
   const [balance, setBalance] = useState<number | null>(null);
@@ -73,6 +79,11 @@ export default function Home() {
         .map((horse) => horse.name),
     [selectedHorseNumbers]
   );
+  const enabledBetTypeOptions = useMemo(
+    () => BET_TYPES.filter((type) => enabledBetTypes[type]),
+    [enabledBetTypes]
+  );
+  const isSelectedBetTypeEnabled = enabledBetTypes[betType];
   const hasValidSelectionForBetType = useMemo(() => {
     if (betType === "EXACTA_BOXED") {
       return selectedHorseNumbers.length >= 2;
@@ -85,7 +96,8 @@ export default function Home() {
     return selectedHorseNumbers.length > 0;
   }, [betType, selectedHorseNumbers.length]);
   const hasValidStake = stakePerLine.trim() !== "" && stakeValue > 0;
-  const canPlaceBet = hasValidSelectionForBetType && hasValidStake && !isPlacingBet;
+  const canPlaceBet =
+    isSelectedBetTypeEnabled && hasValidSelectionForBetType && hasValidStake && !isPlacingBet;
 
   useEffect(() => {
     async function fetchBalance() {
@@ -107,6 +119,15 @@ export default function Home() {
 
     fetchBalance();
   }, []);
+
+  useEffect(() => {
+    if (!isSelectedBetTypeEnabled) {
+      const firstEnabledType = enabledBetTypeOptions[0];
+      if (firstEnabledType) {
+        setBetType(firstEnabledType);
+      }
+    }
+  }, [isSelectedBetTypeEnabled, enabledBetTypeOptions]);
 
   function toggleHorseSelection(horseNumber: number) {
     setSelectedHorseNumbers((prev) =>
@@ -161,9 +182,36 @@ export default function Home() {
     }
   }
 
+  function toggleBetType(type: BetType) {
+    setEnabledBetTypes((prev) => ({
+      ...prev,
+      [type]: !prev[type],
+    }));
+  }
+
   return (
     <main className="min-h-screen bg-slate-50 p-6 text-slate-900">
-      <div className="mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-[2fr_1fr]">
+      <div className="mx-auto max-w-6xl">
+        <section className="mb-6 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-700">
+            Operator Settings
+          </h2>
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            {BET_TYPES.map((type) => (
+              <label key={type} className="flex items-center gap-2 text-sm text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={enabledBetTypes[type]}
+                  onChange={() => toggleBetType(type)}
+                  className="h-4 w-4 rounded border-slate-300"
+                />
+                <span>{type}</span>
+              </label>
+            ))}
+          </div>
+        </section>
+
+        <div className="grid w-full gap-6 lg:grid-cols-[2fr_1fr]">
         <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
           <div className="mb-6">
             <h1 className="text-2xl font-bold">Horse Racing MVP</h1>
@@ -223,13 +271,18 @@ export default function Home() {
               <select
                 value={betType}
                 onChange={(event) => setBetType(event.target.value as BetType)}
+                disabled={enabledBetTypeOptions.length === 0}
                 className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
               >
-                <option value="WIN">WIN</option>
-                <option value="PLACE">PLACE</option>
-                <option value="EXACTA_BOXED">EXACTA_BOXED</option>
-                <option value="TRIFECTA_BOXED">TRIFECTA_BOXED</option>
+                {enabledBetTypeOptions.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
               </select>
+              {enabledBetTypeOptions.length === 0 ? (
+                <p className="mt-2 text-xs text-slate-500">No bet types are enabled.</p>
+              ) : null}
             </div>
 
             <div>
@@ -298,6 +351,7 @@ export default function Home() {
             ) : null}
           </div>
         </aside>
+      </div>
       </div>
     </main>
   );
