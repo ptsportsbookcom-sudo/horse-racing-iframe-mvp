@@ -16,6 +16,7 @@ type BetType =
   | "TRIFECTA_BOXED"
   | "EXACTA_STRAIGHT"
   | "TRIFECTA_STRAIGHT";
+type OddsFormat = "DECIMAL" | "FRACTIONAL";
 type ParentMessage = {
   type: string;
   payload?: unknown;
@@ -53,6 +54,23 @@ const BET_TYPES: BetType[] = [
 ];
 const INITIAL_COUNTDOWN_SECONDS = 2 * 60;
 
+function gcd(a: number, b: number): number {
+  return b === 0 ? a : gcd(b, a % b);
+}
+
+function decimalToFractional(decimalOdds: number): string {
+  if (!Number.isFinite(decimalOdds) || decimalOdds <= 1) {
+    return "-";
+  }
+
+  const fractional = decimalOdds - 1;
+  const denominatorBase = 100;
+  const numerator = Math.round(fractional * denominatorBase);
+  const divisor = gcd(numerator, denominatorBase);
+
+  return `${numerator / divisor}/${denominatorBase / divisor}`;
+}
+
 export default function Home() {
   const [selectedHorseNumbers, setSelectedHorseNumbers] = useState<number[]>([]);
   const [betType, setBetType] = useState<BetType>("WIN");
@@ -65,6 +83,7 @@ export default function Home() {
     TRIFECTA_STRAIGHT: true,
   });
   const [stakePerLine, setStakePerLine] = useState<string>("1");
+  const [oddsFormat, setOddsFormat] = useState<OddsFormat>("DECIMAL");
   const [isPlacingBet, setIsPlacingBet] = useState(false);
   const [secondsRemaining, setSecondsRemaining] = useState<number>(INITIAL_COUNTDOWN_SECONDS);
   const [balance, setBalance] = useState<number | null>(null);
@@ -166,6 +185,24 @@ export default function Home() {
     () => totalStake * averageOdds,
     [totalStake, averageOdds]
   );
+  const formattedAverageOdds =
+    selectedHorseOdds.length === 0
+      ? "-"
+      : oddsFormat === "DECIMAL"
+        ? averageOdds.toFixed(2)
+        : decimalToFractional(averageOdds);
+
+  function formatOdds(decimalOdds: string | number): string {
+    const numericOdds = typeof decimalOdds === "number" ? decimalOdds : Number(decimalOdds);
+
+    if (!Number.isFinite(numericOdds)) {
+      return "-";
+    }
+
+    return oddsFormat === "DECIMAL"
+      ? numericOdds.toFixed(2)
+      : decimalToFractional(numericOdds);
+  }
 
   function sendParentMessage(message: ParentMessage) {
     if (typeof window === "undefined") {
@@ -351,6 +388,36 @@ export default function Home() {
             {balanceError ? (
               <p className="mt-1 text-sm text-rose-400">{balanceError}</p>
             ) : null}
+
+            <div className="mt-4 flex items-center justify-between">
+              <p className="text-xs font-medium uppercase tracking-wide text-[#94a3b8]">
+                Odds Format
+              </p>
+              <div className="inline-flex rounded-md border border-slate-500 bg-[#0f172a] p-1">
+                <button
+                  type="button"
+                  onClick={() => setOddsFormat("DECIMAL")}
+                  className={`rounded px-3 py-1 text-xs font-semibold transition ${
+                    oddsFormat === "DECIMAL"
+                      ? "bg-emerald-500 text-slate-950"
+                      : "text-[#e2e8f0] hover:bg-slate-700"
+                  }`}
+                >
+                  Decimal
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOddsFormat("FRACTIONAL")}
+                  className={`rounded px-3 py-1 text-xs font-semibold transition ${
+                    oddsFormat === "FRACTIONAL"
+                      ? "bg-emerald-500 text-slate-950"
+                      : "text-[#e2e8f0] hover:bg-slate-700"
+                  }`}
+                >
+                  Fractional
+                </button>
+              </div>
+            </div>
           </div>
 
           <div className="space-y-3">
@@ -376,7 +443,7 @@ export default function Home() {
                   </div>
                   <div className="flex items-center gap-3">
                     <p className="text-right text-2xl font-extrabold leading-none text-amber-300">
-                      {horse.odds}
+                      {formatOdds(horse.odds)}
                     </p>
                     <span
                     className={`rounded px-2 py-1 text-xs font-semibold ${
@@ -470,7 +537,7 @@ export default function Home() {
               <p className="mt-2 flex justify-between">
                 <span className="text-xs uppercase tracking-wide text-[#94a3b8]">Average odds</span>
                 <span className="font-semibold">
-                  {selectedHorseOdds.length > 0 ? averageOdds.toFixed(2) : "-"}
+                  {formattedAverageOdds}
                 </span>
               </p>
               <p className="mt-2 flex justify-between">
