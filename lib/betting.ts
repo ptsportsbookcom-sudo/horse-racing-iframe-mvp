@@ -29,6 +29,14 @@ export function calculateTrifectaBoxed(
   };
 }
 
+export function calculateExactaStraight(selections: number[]): number {
+  return selections.length === 2 ? 1 : 0;
+}
+
+export function calculateTrifectaStraight(selections: number[]): number {
+  return selections.length === 3 ? 1 : 0;
+}
+
 export function calculateTotalStake(lines: number, stakePerLine: number): number {
   const safeLines = Number.isFinite(lines) && lines > 0 ? lines : 0;
   const safeStake =

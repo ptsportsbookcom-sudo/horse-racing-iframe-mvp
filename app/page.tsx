@@ -3,11 +3,19 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   calculateExactaBoxed,
+  calculateExactaStraight,
   calculateTotalStake,
   calculateTrifectaBoxed,
+  calculateTrifectaStraight,
 } from "@/lib/betting";
 
-type BetType = "WIN" | "PLACE" | "EXACTA_BOXED" | "TRIFECTA_BOXED";
+type BetType =
+  | "WIN"
+  | "PLACE"
+  | "EXACTA_BOXED"
+  | "TRIFECTA_BOXED"
+  | "EXACTA_STRAIGHT"
+  | "TRIFECTA_STRAIGHT";
 type ParentMessage = {
   type: string;
   payload?: unknown;
@@ -35,7 +43,14 @@ const RACE = {
     { number: 10, name: "Royal Legend", odds: "10.00" },
   ] satisfies Horse[],
 };
-const BET_TYPES: BetType[] = ["WIN", "PLACE", "EXACTA_BOXED", "TRIFECTA_BOXED"];
+const BET_TYPES: BetType[] = [
+  "WIN",
+  "PLACE",
+  "EXACTA_BOXED",
+  "TRIFECTA_BOXED",
+  "EXACTA_STRAIGHT",
+  "TRIFECTA_STRAIGHT",
+];
 const INITIAL_COUNTDOWN_SECONDS = 2 * 60;
 
 export default function Home() {
@@ -46,6 +61,8 @@ export default function Home() {
     PLACE: true,
     EXACTA_BOXED: true,
     TRIFECTA_BOXED: true,
+    EXACTA_STRAIGHT: true,
+    TRIFECTA_STRAIGHT: true,
   });
   const [stakePerLine, setStakePerLine] = useState<string>("1");
   const [isPlacingBet, setIsPlacingBet] = useState(false);
@@ -65,6 +82,10 @@ export default function Home() {
         return calculateExactaBoxed(selectedHorseNumbers).numberOfLines;
       case "TRIFECTA_BOXED":
         return calculateTrifectaBoxed(selectedHorseNumbers).numberOfLines;
+      case "EXACTA_STRAIGHT":
+        return calculateExactaStraight(selectedHorseNumbers);
+      case "TRIFECTA_STRAIGHT":
+        return calculateTrifectaStraight(selectedHorseNumbers);
       case "WIN":
       case "PLACE":
         return selectedHorseNumbers.length;
@@ -80,16 +101,19 @@ export default function Home() {
   );
   const selectedHorseNames = useMemo(
     () =>
-      RACE.horses
-        .filter((horse) => selectedHorseNumbers.includes(horse.number))
-        .map((horse) => horse.name),
+      selectedHorseNumbers
+        .map((horseNumber) => RACE.horses.find((horse) => horse.number === horseNumber)?.name)
+        .filter((horseName): horseName is string => Boolean(horseName)),
     [selectedHorseNumbers]
   );
   const selectedHorseOdds = useMemo(
     () =>
-      RACE.horses
-        .filter((horse) => selectedHorseNumbers.includes(horse.number))
-        .map((horse) => Number(horse.odds)),
+      selectedHorseNumbers
+        .map((horseNumber) => {
+          const horse = RACE.horses.find((runner) => runner.number === horseNumber);
+          return horse ? Number(horse.odds) : null;
+        })
+        .filter((odds): odds is number => typeof odds === "number"),
     [selectedHorseNumbers]
   );
   const enabledBetTypeOptions = useMemo(
@@ -106,6 +130,14 @@ export default function Home() {
 
     if (betType === "TRIFECTA_BOXED") {
       return selectedHorseNumbers.length >= 3;
+    }
+
+    if (betType === "EXACTA_STRAIGHT") {
+      return selectedHorseNumbers.length === 2;
+    }
+
+    if (betType === "TRIFECTA_STRAIGHT") {
+      return selectedHorseNumbers.length === 3;
     }
 
     return selectedHorseNumbers.length > 0;
