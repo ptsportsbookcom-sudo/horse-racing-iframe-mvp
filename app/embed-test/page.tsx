@@ -1,7 +1,7 @@
 const MOCK_TOKEN = "mock-jwt-token-12345";
 
 export default function EmbedTestPage() {
-  const iframeSrc = `/?token=${encodeURIComponent(MOCK_TOKEN)}`;
+  const iframeSrc = `/?token=${encodeURIComponent(MOCK_TOKEN)}&v=1`;
 
   return (
     <main className="min-h-screen bg-slate-100 p-6">
